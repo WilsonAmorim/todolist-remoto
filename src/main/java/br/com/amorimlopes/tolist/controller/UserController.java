@@ -1,4 +1,4 @@
-package br.com.amorimlopes.tolist.user;
+package br.com.amorimlopes.tolist.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -7,6 +7,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import at.favre.lib.crypto.bcrypt.BCrypt;
+import br.com.amorimlopes.tolist.user.IUserRepository;
+import br.com.amorimlopes.tolist.user.UserModel;
 
 @RestController
 @RequestMapping("/users")
@@ -20,10 +24,13 @@ public class UserController {
         var user = this.userRepository.findByUsername(userModel.getUsername());
         if (user != null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Usuário já existe");
-            
+
         }
+        var passwordHashred = BCrypt.withDefaults().hashToString(12, userModel.getPassword().toCharArray());
+
+        userModel.setPassword(passwordHashred);
         var userCreated = userRepository.save(userModel);
-        return ResponseEntity.status(HttpStatus.CREATED).body(userCreated);
+        return ResponseEntity.status(HttpStatus.OK).body(userCreated);
 
     }
 }
